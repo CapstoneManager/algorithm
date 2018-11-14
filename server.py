@@ -1,6 +1,7 @@
 from flask import Flask, request
 import MinCostMaxFlow
 import threading
+import requests
 
 app = Flask(__name__)
 
@@ -12,9 +13,10 @@ def hello_world():
 
 @app.route('/algorithm', methods=['POST'])
 def algorithm():
+    print("running /algorithm")
     global running
     if (running == False):
-        data = request.get_json();
+        data = request.get_json()
         threading.Thread(target=process(data)).start()
     return ""
 

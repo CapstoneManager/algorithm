@@ -84,7 +84,7 @@ json = {
     "projects": projects,
     "projMinCapacity": projMinCapacity,
     "projMaxCapacity": projMaxCapacity,
-    "ranking": ranking,
+    "rankings": ranking,
 }
 
 requests.post('http://127.0.0.1:5000/algorithm', json=json)
