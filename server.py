@@ -28,5 +28,6 @@ def checkStatus():
 def process(data):
     global running
     running = True
-    MinCostMaxFlow.flow(data["students"], data["projects"], data["projMinCapacity"], data["projMaxCapacity"], data["rankings"])
+    result = MinCostMaxFlow.flow(data["students"], data["projects"], data["projMinCapacity"], data["projMaxCapacity"], data["rankings"])
+    r = requests.post('http://localhost:8443/assign-to-students', json=result)
     running = False
