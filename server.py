@@ -31,5 +31,7 @@ def process(data):
     global running
     running = True
     result = MinCostMaxFlow.flow(data["students"], data["projects"], data["projMinCapacity"], data["projMaxCapacity"], data["rankings"])
-    r = requests.post('http://localhost:8443/assign-to-students', json=result)
+    r = requests.post('http://localhost:8443/projects/assign-to-students', json=result)
+    print("HELLO")
+    print(result)
     running = False
