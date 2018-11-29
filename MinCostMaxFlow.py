@@ -3,12 +3,11 @@ import csv
 import time
 import json
 
-minScore = 1000
-oldmin = 1000
+minScore = 10000
+oldmin = 10000
 studentDict = {}
 projectsDict = {}
 combinations = []
-fhand = open("output.csv","w+")
 foundOptim = 0
 
 def writeToFile(elapsed_time, projects):
@@ -21,16 +20,7 @@ def writeToFile(elapsed_time, projects):
     for p in projects:
         projectsDict[p] = -1
 
-    # fhand = open("output.csv","w+")
-    # fhand.write(str(elapsed_time) + "\n")
-    # fhand.write("Total Cost " + str(minScore) + "\n")
-    # for key in studentDict.keys():
-    #     line = key + "," + str(studentDict[key][0])+","+str(studentDict[key][1])
-    #     projectsDict[studentDict[key][0]] = projectsDict[studentDict[key][0]]+1
-    #     fhand.write(line)
-    #     fhand.write("\n")
-
-    # fhand = open("output.csv","w+")
+    fhand = open("output.csv","w+")
     fhand.write(str(elapsed_time) + "\n")
     fhand.write("Total Cost " + str(minScore) + "\n")
     for key in studentDict.keys():
@@ -49,12 +39,13 @@ def writeToFile(elapsed_time, projects):
         else: 
             count5 += 1
 
+    fhand.write("Count of rankings \n")
     fhand.write("Count1 " + str(count1) + "\n")
     fhand.write("Count2 " + str(count2) + "\n")
     fhand.write("Count3 " + str(count3) + "\n")
     fhand.write("Count4 " + str(count4) + "\n")
     fhand.write("Count5 " + str(count5) + "\n")
-    fhand.write("Proj Dict")
+    fhand.write("Project Dictionary")
 
     for key in projectsDict.keys():
         line1 = key + "," + str(projectsDict[key])
@@ -103,7 +94,6 @@ def optimizeGroups(students, projects, projMinCapacity, projMaxCapacity, ranking
         min_capacity_constraint[p] = constraint
 
     assignment_model.solve()
-    # print (LpStatus[assignment_model.status])
     if LpStatus[assignment_model.status] == "Optimal":
         if value(assignment_model.objective) < minScore:
             minScore = value(assignment_model.objective)
@@ -118,6 +108,9 @@ def optimizeGroups(students, projects, projMinCapacity, projMaxCapacity, ranking
 
 def flow(students, projects, projMinCapacity, projMaxCapacity, ranking):
     global oldmin
+    global foundOptim
+    global minScore
+
     start_time = time.time()
     capacities = [0] * len(projects)
     for r in ranking:
@@ -131,7 +124,7 @@ def flow(students, projects, projMinCapacity, projMaxCapacity, ranking):
     for p in range(len(projects)):
         if capacities[p] >= projMinCapacity[projects[p]]:
             chosen.append(projects[p])
-    print len(chosen)
+    print ("Length chosen " + str(len(chosen)) + "\n")
     projects = chosen
 
     sortedprojects = projects
@@ -155,40 +148,34 @@ def flow(students, projects, projMinCapacity, projMaxCapacity, ranking):
         if maxcount < len(students):
             maxval = i
     
-    print maxval
-    print minval
-
-    print len(projects)
+    minval = minval - 1
+    print ("Minimum Value " + str(maxval) + "\n")
+    print ("Maximum Value " + str(minval) + "\n")
+    print ("Length of projects " + str(len(projects)) + "\n")
         
     # generate all possible combinations
     for i in range(minval,maxval,-1):
-        print len(projects)
-        print("OPtim")
-        print foundOptim
-        print minScore
-        print oldmin
-        
         if foundOptim == 1:
             if minScore == oldmin:
                 break
         oldmin = minScore
         possible_projects = pulp.combination(projects, i)
         checkCapacity(possible_projects, projMinCapacity, projMaxCapacity, students)
+        if len(combinations) == 0:
+            print ("Iteration " + str(i) + " has 0 combinations")
+            continue
         for c in combinations:
             optimizeGroups(students, c, projMinCapacity, projMaxCapacity, ranking)
         print("***************ENDED OPTIMIZATION*****************")
         elapsed_time = time.time() - start_time
-
-        writeToFile(elapsed_time, projects)
+        if foundOptim == 1:
+            writeToFile(elapsed_time, projects)
         optmized = []
-        print projectsDict
         for key in projectsDict.keys():
-            if projectsDict[key] != -1:
+            if projectsDict[key] != -1 or foundOptim == 0:
                 optmized.append(key)
-            # print key
 
         projects = optmized
         del combinations[:]
-        print len(combinations)
 
     return studentDict
